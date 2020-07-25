@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -37,11 +38,13 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static String URL = "https://rawg-video-games-database.p.rapidapi.com/developers";
+    private static String URL = "https://rawg-video-games-database.p.rapidapi.com/games";
     private JsonArrayRequest ArrayRequest;
     private RequestQueue requestQueue;
-    private List<Game> lstGame = new ArrayList<>();
+    private ArrayList<Game> lstGame = new ArrayList<>();
     private RecyclerView myrv;
+    private TextView txt;
+    private RecyclerViewAdapter myAdapter;
 
 
 
@@ -50,26 +53,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ObtenerDatos();
-        setRvadapter(lstGame);
+        myrv = findViewById(R.id.rv);
+        myrv.setHasFixedSize(true);
+        myrv.setLayoutManager(new LinearLayoutManager(this));
 
-
-    }
-
-    private void setRvadapter(List<Game> lstGame) {
-        myrv = (RecyclerView)findViewById(R.id.rv);
 
         LinearLayoutManager layout = new LinearLayoutManager(getApplicationContext());
         layout.setOrientation(LinearLayoutManager.VERTICAL);
-        myrv.setLayoutManager(layout);
 
-        RecyclerViewAdapter myAdapter = new RecyclerViewAdapter(this,lstGame);
-        myrv.setAdapter(myAdapter);
+
+
+        ObtenerDatos();
 
     }
 
 
     private void ObtenerDatos() {
+
+        requestQueue = Volley.newRequestQueue(MainActivity.this);
 
         StringRequest request =  new StringRequest(Request.Method.GET, URL, new Response.Listener<String>() {
             @Override
@@ -77,21 +78,23 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     //Convertir Response a un JSONObject cambiar estoy son dos linea la 1 y la 2
-                    JSONArray mJsonArray = new JSONArray() ;   // response.getJSONArray("results");
-                    for (int i = 0; i < response.length(); i++){
-                        JSONObject mjsonObject = mJsonArray.getJSONObject(i);
-                        Game game = new Game();
-                        game.setName(mjsonObject.getString("name"));
-                        game.setReleased(mjsonObject.getString("released"));
-                        game.setRating(mjsonObject.getString("rating"));
-                        game.setSlug(mjsonObject.getString("slug"));
-                        game.setBackground_image(mjsonObject.getString("image_background"));
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray mArray =  jsonObject.getJSONArray("results");
+                    for (int i = 0; i < mArray.length(); i++){
 
-                        lstGame.add(game);
+                        JSONObject mjsonObject = mArray.getJSONObject(i);
 
+                        String nombre = mjsonObject.getString("name");
+                        String released = mjsonObject.getString("released");
+                        String rating = mjsonObject.getString("rating");
+                        String slug = mjsonObject.getString("slug");
+                        String urlimagen = mjsonObject.getString("background_image");
 
-
+                        lstGame.add(new Game(nombre, slug, released, rating, urlimagen));
+                        //String name, String slug, String released, String rating, String background_image
                     }
+                    myAdapter = new RecyclerViewAdapter(MainActivity.this, lstGame);
+                    myrv.setAdapter(myAdapter);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -116,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        requestQueue = Volley.newRequestQueue(MainActivity.this);
+
         requestQueue.add(request);
 
     }
