@@ -14,74 +14,69 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.gamelistsex.R;
 import com.example.gamelistsex.model.Game;
+import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ItemsViewHolder> {
+    private Context mContext;
+    private ArrayList<Game> lst_games;
 
-
-    private Context mContexto;
-    private List<Game> mData;
-    RequestOptions options;
-
-    public RecyclerViewAdapter(Context mContexto, List<Game> mData) {
-        this.mContexto = mContexto;
-        this.mData = mData;
-        options = new RequestOptions()
-                .centerCrop()
-                .placeholder(R.drawable.loading_shape)
-                .error(R.drawable.loading_shape);
+    public RecyclerViewAdapter(Context mContext, ArrayList<Game> lst_games) {
+        this.mContext = mContext;
+        this.lst_games = lst_games;
     }
 
-
+    @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder( ViewGroup parent, int viewType) {
-
-        View view;
-        LayoutInflater inflater =LayoutInflater.from(mContexto);
-        view = inflater.inflate(R.layout.game_row_item,parent,false);
-
-
-
-        return new MyViewHolder(view);
+    public ItemsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(mContext).inflate(R.layout.game_row_item, parent, false);
+        return new ItemsViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ItemsViewHolder holder, int position) {
+        Game currenItem = lst_games.get(position);
 
-        holder.tv_name.setText(mData.get(position).getName());
-        holder.tv_released.setText(mData.get(position).getReleased());
-        holder.tv_slug.setText(mData.get(position).getSlug());
+        String released = currenItem.getReleased();
+        String name = currenItem.getName();
+        String slug = currenItem.getSlug();
+        String rating = currenItem.getRating();
+        String urlImage = currenItem.getBackground_image();
 
+        holder.tv_name.setText(name);
+        holder.tv_rating.setText(rating);
+        holder.tv_slug.setText(slug);
+        holder.tv_released.setText(released);
 
-        Glide.with(mContexto).load(mData.get(position).getBackground_image()).apply(options).into(holder.img_thumbnall);
-
+        Picasso.get().load(urlImage).into(holder.img_thumbnall);
 
     }
 
     @Override
     public int getItemCount() {
-        return mData.size();
+        return lst_games.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder{
+    public class ItemsViewHolder extends RecyclerView.ViewHolder{
 
-        TextView tv_name;
-        TextView tv_released;
-        TextView tv_slug;
-        TextView tv_rating;
-        ImageView img_thumbnall;
+        public TextView tv_name;
+        public TextView tv_released;
+        public TextView tv_slug;
+        public TextView tv_rating;
+        public ImageView img_thumbnall;
 
-
-        public MyViewHolder(View itemView) {
+        public ItemsViewHolder(@NonNull View itemView) {
             super(itemView);
-
             tv_name = itemView.findViewById(R.id.name);
             tv_released =itemView.findViewById(R.id.released);
             tv_slug = itemView.findViewById(R.id.slug);
             tv_rating = itemView.findViewById(R.id.rating);
             img_thumbnall =itemView.findViewById(R.id.imgthumbnail);
+
         }
     }
+
 }
